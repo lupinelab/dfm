@@ -6,9 +6,9 @@ from dfm.linking.ignore import Ignore
 
 def read_config(repo):
     ## check exists
-    with open(os.path.join(repo, ".dfm2.yaml"), "r") as cfg:
+    with open(os.path.join(repo, ".dfm.yaml"), "r") as cfg:
         config = yaml.safe_load(cfg)
-        config["ignored"].append(r"\.dfm2\.yaml")
+        config["ignored"].append(r"\.dfm\.yaml")
         return config
 
 
