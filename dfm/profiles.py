@@ -2,7 +2,9 @@ import os
 import shutil
 import subprocess
 import sys
+
 from dfm.linking.linking import Linker
+
 
 class Profile:
     def __init__(self, repo):
@@ -27,29 +29,22 @@ class Profile:
 
     def git_cmd(self, args: list, capture: bool = False):
         return subprocess.run(
-            ["git"] + args,
-            cwd=self.repo,
-            capture_output=capture,
-            check=True
+            ["git"] + args, cwd=self.repo, capture_output=capture, check=True
         )
 
     def is_dirty(self):
         status = self.git_cmd(args=["status", "--porcelain"])
         return bool(status.stdout.decode("utf-8"))
 
-
     def commit_changes(self):
         self.git_cmd(args=["add", "--all"])
         self.git_cmd(args=["commit", "-m", "changes to dotfiles"])
 
-
     def update_profile(self):
         self.git_cmd(args=["push"])
 
-
     def receive_changes(self):
         self.git_cmd(args=["pull", "--rebase"])
-
 
     def sync(self):
         has_changes = self.is_dirty()

@@ -1,10 +1,8 @@
-import click
-import os
 import functools
 import json
-import shutil
-import subprocess
-import sys
+import os
+
+import click
 from xdg_base_dirs import xdg_state_home
 
 from dfm.profiles import Profile
@@ -51,7 +49,7 @@ def add(path, profile, state):
     profile = Profile(profile or state.get("current_profile"))
     assert profile, "Bleurg, need profile!!!"
     profile.add(path)
-    
+
 
 @cli.command()
 @stateful
@@ -61,15 +59,10 @@ def sync(profile, state):
     profile.sync()
 
 
-@cli.command(
-    context_settings=dict(
-        ignore_unknown_options=True,
-        allow_extra_args=True
-    )
-)
+@cli.command(context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
 @stateful
 @click.option("-p", "--profile", type=str, default="")
-@click.argument('args', nargs=-1, type=click.UNPROCESSED)
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
 def git(profile, args, state):
     profile = Profile(profile or state.get("current_profile"))
     profile.git_cmd(args=list(args))

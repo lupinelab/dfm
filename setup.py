@@ -12,5 +12,5 @@ setup(
         "pyyaml",
         "xdg-base-dirs",
     ],
-    entry_points={"console_scripts": ["dfm = dfm.cli:cli"]}
+    entry_points={"console_scripts": ["dfm = dfm.cli:cli"]},
 )
