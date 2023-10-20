@@ -3,7 +3,7 @@ import shutil
 import subprocess
 import sys
 
-from dfm.linking.linking import Linker
+from dfm.linking.linker import Linker
 
 
 class Profile:
