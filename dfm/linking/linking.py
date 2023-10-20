@@ -4,47 +4,56 @@ import os
 from dfm.linking.ignore import Ignore
 
 
-def read_config(repo):
-    ## check exists
-    with open(os.path.join(repo, ".dfm.yaml"), "r") as cfg:
-        config = yaml.safe_load(cfg)
-        config["ignored"].append(r"\.dfm\.yaml")
-        return config
+class Linker:
+    def __init__(self, src, dest, ignored, linked_dirs):
+        self.src_dir = src
+        self.dest_dir = dest
+        self.ignored = ignored
+        self.linked_dirs = linked_dirs
 
 
-def make_path_relative(abs_path, relative_to):
-    return abs_path[len(relative_to)+1:]
+    @classmethod
+    def load_config(cls, src, dest):
+        with open(os.path.join(src, ".dfm.yaml"), "r") as cfg:
+            config = yaml.safe_load(cfg)
+            config["ignored"].append(r"\.dfm\.yaml")
+            
+        ignored = Ignore.from_config(config)
+        linked_dirs = config["link_as_dir"]
+        
+        return cls(src, dest, ignored, linked_dirs) 
 
 
-def link_profile(profile):
-    repo = os.path.abspath(profile)
-    cfg = read_config(repo)
-    ignored = Ignore.from_config(cfg)
-    linked_dirs = cfg["link_as_dir"]
-    for root, dirnames, filenames in os.walk(repo):
-        if ".git" in dirnames:
-            dirnames.remove(".git")
-
-        if any(root.endswith(d) for d in linked_dirs):
-            make_link(root, repo, ignored)
-
-        for filename in filenames:
-            src = os.path.join(root, filename)
-            make_link(src, repo, ignored)
+    def make_path_relative(self, abs_path, relative_to):
+        return abs_path[len(relative_to)+1:]
 
 
-def link_to_homedir(src, rel_path):
-    target = os.path.join(os.path.expanduser("~"), rel_path)
-    if os.path.exists(target):
-        return
-    
-    os.makedirs(os.path.dirname(target), exist_ok=True)
-    os.symlink(src, target)
+    def link_profile(self):
+        repo = os.path.abspath(self.src_dir)
+        for root, dirnames, filenames in os.walk(repo):
+            if ".git" in dirnames:
+                dirnames.remove(".git")
+
+            if any(root.endswith(d) for d in self.linked_dirs):
+                self.make_link(root, repo)
+
+            for filename in filenames:
+                src = os.path.join(root, filename)
+                self.make_link(src, repo)
 
 
-def make_link(abs_path: str, repo: str, ignored: Ignore):
-    rel_path = make_path_relative(abs_path, repo)
-    print(f"linking {abs_path} in to homedir at {rel_path}")
-    if ignored.is_ignored(rel_path):
-        return
-    link_to_homedir(abs_path, rel_path)
+    def link_to_homedir(self):
+        target = os.path.join(os.path.expanduser("~"), self.dest_dir)
+        if os.path.exists(target):
+            return
+        
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        os.symlink(self.src_dir, target)
+
+
+    def make_link(self, abs_path: str, repo: str,):
+        rel_path = self.make_path_relative(abs_path, repo)
+        print(f"linking {abs_path} in to homedir at {rel_path}")
+        if self.ignored.is_ignored(rel_path):
+            return
+        self.link_to_homedir()

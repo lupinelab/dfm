@@ -3,10 +3,11 @@ import os
 import functools
 import json
 import shutil
+import subprocess
 import sys
 from xdg_base_dirs import xdg_state_home
 
-from dfm.linking.linking import link_profile
+from dfm.profiles import Profile
 
 
 def stateful(fn):
@@ -35,11 +36,11 @@ def cli():
 
 @cli.command()
 @stateful
-@click.argument("repo", nargs=-1)
-def link(repo, state):
-    profile = repo[0] if repo else state["current_profile"]
-    link_profile(profile)
-    state["current_profile"] = profile
+@click.argument("profile", nargs=-1)
+def link(profile, state):
+    profile = Profile(profile or state.get("current_profile"))
+    profile.link()
+    state["current_profile"] = profile.repo
 
 
 @cli.command()
@@ -47,21 +48,28 @@ def link(repo, state):
 @click.argument("path")
 @click.option("-p", "--profile", type=str, default="")
 def add(path, profile, state):
-    if not profile:
-        profile = state.get("current_profile")
-    
+    profile = Profile(profile or state.get("current_profile"))
     assert profile, "Bleurg, need profile!!!"
-    abs_path = os.path.abspath(path)
-    rel_path = os.path.relpath(abs_path, os.path.expanduser("~"))
-    if os.path.isdir(abs_path):
-        print("To add a directory do it manually")
-        sys.exit(1)
+    profile.add(path)
+    
 
-    if os.path.islink(abs_path):
-        return
+@cli.command()
+@stateful
+@click.option("-p", "--profile", type=str, default="")
+def sync(profile, state):
+    profile = Profile(profile or state.get("current_profile"))
+    profile.sync()
 
-    target_path = os.path.join(profile, rel_path)
-    os.makedirs(os.path.dirname(target_path), exist_ok=True)
-    shutil.copy2(abs_path, target_path)
-    os.remove(abs_path)
-    print(f"Added to {profile}, you should probably run `dfm link`!")
+
+@cli.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+        allow_extra_args=True
+    )
+)
+@stateful
+@click.option("-p", "--profile", type=str, default="")
+@click.argument('args', nargs=-1, type=click.UNPROCESSED)
+def git(profile, args, state):
+    profile = Profile(profile or state.get("current_profile"))
+    profile.git_cmd(args=list(args))
