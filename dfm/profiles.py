@@ -33,7 +33,7 @@ class Profile:
         )
 
     def is_dirty(self):
-        status = self.git_cmd(args=["status", "--porcelain"])
+        status = self.git_cmd(args=["status", "--porcelain"], capture=True)
         return bool(status.stdout.decode("utf-8"))
 
     def commit_changes(self):

@@ -39,13 +39,13 @@ class Linker:
                 src = os.path.join(root, filename)
                 self.make_link(src, repo)
 
-    def link_to_homedir(self):
-        target = os.path.join(os.path.expanduser("~"), self.dest_dir)
+    def link_to_homedir(self, src, rel_path):
+        target = os.path.join(os.path.expanduser("~"), rel_path)
         if os.path.exists(target):
-            return
+            os.remove(target)
 
         os.makedirs(os.path.dirname(target), exist_ok=True)
-        os.symlink(self.src_dir, target)
+        os.symlink(src, target)
 
     def make_link(
         self,
@@ -55,5 +55,6 @@ class Linker:
         rel_path = self.make_path_relative(abs_path, repo)
         print(f"linking {abs_path} in to homedir at {rel_path}")
         if self.ignored.is_ignored(rel_path):
+            print(f"{rel_path} is ignored")
             return
-        self.link_to_homedir()
+        self.link_to_homedir(abs_path, rel_path)

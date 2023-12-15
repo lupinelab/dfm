@@ -34,7 +34,7 @@ def cli():
 
 @cli.command()
 @stateful
-@click.argument("profile", nargs=-1)
+@click.option("-p", "--profile", type=str, default="")
 def link(profile, state):
     profile = Profile(profile or state.get("current_profile"))
     profile.link()
