@@ -1,3 +1,4 @@
-click==8.1.7
--e git+https://github.com/lupinelab/dfm.git@4ab18fc04cd52e963c8bc3ea7dca034fdc146b5a#egg=dfm
-PyYAML==6.0.1
+-e .
+pytest
+black
+isort

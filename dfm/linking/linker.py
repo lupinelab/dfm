@@ -57,4 +57,5 @@ class Linker:
         if self.ignored.is_ignored(rel_path):
             print(f"{rel_path} is ignored")
             return
+        
         self.link_to_homedir(abs_path, rel_path)
